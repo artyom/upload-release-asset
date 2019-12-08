@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -76,6 +77,7 @@ func upload(args runArgs, file string) error {
 	u.RawQuery = vals.Encode()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
+	log.Println("upload url is", u) // FIXME
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), f)
 	if err != nil {
 		return err
