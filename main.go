@@ -54,6 +54,7 @@ func run(args runArgs, assets ...string) error {
 	if args.UploadURL == "" {
 		return errors.New("empty upload url")
 	}
+	log.Printf("upload url is %q", args.UploadURL) // FIXME
 	for _, file := range assets {
 		if err := upload(args, file); err != nil {
 			return fmt.Errorf("%q upload: %w", file, err)
@@ -77,7 +78,6 @@ func upload(args runArgs, file string) error {
 	u.RawQuery = vals.Encode()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
-	log.Println("upload url is", u) // FIXME
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), f)
 	if err != nil {
 		return err
