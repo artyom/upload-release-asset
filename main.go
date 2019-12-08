@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -55,6 +56,10 @@ func run(args runArgs, assets ...string) error {
 		return errors.New("empty upload url")
 	}
 	log.Printf("upload url is %q", args.UploadURL) // FIXME
+	// github.com/actions/create-release has its outputs.upload_url as
+	// https://uploads.github.com/repos/.../assets{?name,label} — need to
+	// remove that suffix to get usable url
+	args.UploadURL = strings.TrimSuffix(args.UploadURL, `{?name,label}`)
 	for _, file := range assets {
 		if err := upload(args, file); err != nil {
 			return fmt.Errorf("%q upload: %w", file, err)
