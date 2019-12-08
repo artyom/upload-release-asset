@@ -2,10 +2,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -75,18 +77,26 @@ func upload(args runArgs, file string) error {
 		return err
 	}
 	defer f.Close()
+	head := make([]byte, 512)
+	switch i, err := f.Read(head); err {
+	case nil, io.EOF:
+		head = head[:i]
+	default:
+		return err
+	}
 	vals := make(url.Values)
 	vals.Set("name", filepath.Base(file))
 	u.RawQuery = vals.Encode()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), f)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), io.MultiReader(bytes.NewReader(head), f))
 	if err != nil {
 		return err
 	}
 	if fi, err := f.Stat(); err == nil {
 		req.ContentLength = fi.Size()
 	}
+	req.Header.Set("Content-Type", http.DetectContentType(head))
 	req.SetBasicAuth(args.User, args.Token)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
