@@ -4,3 +4,10 @@ description: 'Experiment with docker github action'
 runs:
   using: 'docker'
   image: 'Dockerfile'
+inputs:
+  upload_url:
+    description: 'The URL for uploading assets to the release'
+    required: true
+  assets:
+    description: 'Colon-separated paths to release assets you want to upload'
+    required: true

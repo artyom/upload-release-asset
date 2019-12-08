@@ -23,7 +23,7 @@ func main() {
 	}
 	autoflags.Parse(&args)
 	assets := flag.Args()
-	if s := os.Getenv("INPUT_RELEASE_ASSETS"); s != "" {
+	if s := os.Getenv("INPUT_ASSETS"); s != "" {
 		assets = filepath.SplitList(s)
 	}
 	if err := run(args, assets...); err != nil {
