@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -78,6 +79,9 @@ func upload(args runArgs, file string) error {
 	if err != nil {
 		return err
 	}
+	if fi, err := f.Stat(); err == nil {
+		req.ContentLength = fi.Size()
+	}
 	req.SetBasicAuth(args.User, args.Token)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -85,6 +89,7 @@ func upload(args runArgs, file string) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
+		io.Copy(os.Stdout, resp.Body) // FIXME
 		return fmt.Errorf("unexpected response status: %q", resp.Status)
 	}
 	return nil
