@@ -1,8 +1,10 @@
-# Container image that runs your code
-FROM alpine:3.10
+FROM golang:alpine AS builder
+WORKDIR /app
+ENV GOPROXY=https://proxy.golang.org CGO_ENABLED=0
+COPY . .
+RUN go build -ldflags='-s -w' -o main
 
-# Copies your code file from your action repository to the filesystem path `/` of the container
-COPY entrypoint.sh /entrypoint.sh
-
-# Code file to execute when the docker container starts up (`entrypoint.sh`)
-ENTRYPOINT ["/entrypoint.sh"]
+FROM scratch
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /app/main .
+CMD ["./main"]
