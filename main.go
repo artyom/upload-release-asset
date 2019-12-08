@@ -6,8 +6,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -55,7 +53,6 @@ func run(args runArgs, assets ...string) error {
 	if args.UploadURL == "" {
 		return errors.New("empty upload url")
 	}
-	log.Printf("upload url is %q", args.UploadURL) // FIXME
 	// github.com/actions/create-release has its outputs.upload_url as
 	// https://uploads.github.com/repos/.../assets{?name,label} — need to
 	// remove that suffix to get usable url
@@ -91,14 +88,12 @@ func upload(args runArgs, file string) error {
 		req.ContentLength = fi.Size()
 	}
 	req.SetBasicAuth(args.User, args.Token)
-	req.Header.Set("Content-Type", "application/octet-stream") // FIXME
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
-		io.Copy(os.Stdout, resp.Body) // FIXME
 		return fmt.Errorf("unexpected response status: %q", resp.Status)
 	}
 	return nil
