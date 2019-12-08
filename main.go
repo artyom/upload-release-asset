@@ -12,8 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/artyom/autoflags"
 )
 
 func main() {
@@ -22,7 +20,10 @@ func main() {
 		Token:     os.Getenv("GITHUB_TOKEN"),
 		UploadURL: os.Getenv("INPUT_UPLOAD_URL"),
 	}
-	autoflags.Parse(&args)
+	// autoflags.Parse(&args)
+	flag.StringVar(&args.User, "user", args.User, "github user")
+	flag.StringVar(&args.Token, "token", args.Token, "github authorization token")
+	flag.StringVar(&args.UploadURL, "url", args.UploadURL, "release assets upload url")
 	assets := flag.Args()
 	if s := os.Getenv("INPUT_ASSETS"); s != "" {
 		assets = filepath.SplitList(s)
@@ -83,6 +84,7 @@ func upload(args runArgs, file string) error {
 		req.ContentLength = fi.Size()
 	}
 	req.SetBasicAuth(args.User, args.Token)
+	req.Header.Set("Content-Type", "application/octet-stream") // FIXME
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
