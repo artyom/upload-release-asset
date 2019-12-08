@@ -69,7 +69,7 @@ func upload(args runArgs, file string) error {
 		return err
 	}
 	defer f.Close()
-	vals := new(url.Values)
+	vals := make(url.Values)
 	vals.Set("name", filepath.Base(file))
 	u.RawQuery = vals.Encode()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
