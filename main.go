@@ -58,7 +58,12 @@ func run(args runArgs, assets ...string) error {
 	// github.com/actions/create-release has its outputs.upload_url as
 	// https://uploads.github.com/repos/.../assets{?name,label} — need to
 	// remove that suffix to get usable url
-	args.UploadURL = strings.TrimSuffix(args.UploadURL, `{?name,label}`)
+	if i := strings.Index(args.UploadURL, "{?"); i > 0 {
+		args.UploadURL = args.UploadURL[:i]
+	}
+	if !strings.HasSuffix(args.UploadURL, "/assets") {
+		return errors.New("assets upload url path expected to end with /assets")
+	}
 	for _, file := range assets {
 		if err := upload(args, file); err != nil {
 			return fmt.Errorf("%q upload: %w", file, err)
